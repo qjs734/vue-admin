@@ -2,14 +2,14 @@
   <div>
     <el-button type="primary" icon="el-icon-plus">添加</el-button>
 
-    <el-table :data="tableData" border style="width: 100%; margin: 20px 0">
-      <el-table-column prop="id" label="序号" width="80" align="center">
+    <el-table :data="trademarkList" border style="width: 100%; margin: 20px 0">
+      <el-table-column type="index" label="序号" width="80" align="center">
       </el-table-column>
-      <el-table-column prop="name" label="品牌名称"> </el-table-column>
+      <el-table-column prop="tmName" label="品牌名称"> </el-table-column>
       <el-table-column label="品牌LOGO">
         <template slot-scope="scope">
           <!-- scope代替所有数据  scope.row代表当前这一行的所有数据 -->
-          <img :src="scope.row.logo" alt="logo" class="trademark-img" />
+          <img :src="scope.row.logoUrl" alt="logo" class="trademark-img" />
           <!-- {{ scope }} -->
         </template>
       </el-table-column>
@@ -21,29 +21,62 @@
       </el-table-column>
     </el-table>
     <el-pagination
+      @size-change="getPageList(page, limit)"
+      @current-change="getPageList(page, limit)"
       class="trademark-pagination"
       layout="prev, pager,next, jumper,sizes,total"
-      :total="50"
+      :page-sizes="[3, 6, 9]"
+      :page-size.sync="limit"
+      :current-page.sync="page"
+      :total="total"
     >
-    </el-pagination
-    >00000000000000000000000000000000
+    </el-pagination>
   </div>
 </template>
 
 <script>
+//分别引入这样汇总的
+// import { trademark } from "@/api";
+//因为在main里引入了API as API 在Vue的原型上属性与方法都有个$符号 所以可以不用引入直接用
+
 export default {
   name: "TrademarkList",
   data() {
     return {
-      tableData: [
-        {
-          id: 1,
-          name: "phone",
-          logo:
-            "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1607695399952&di=0cc71676efdcaadbb9073ceabc174c99&imgtype=0&src=http%3A%2F%2Fnews.hnr.cn%2Fjctj%2F201610%2FW020161003422179350181.jpg",
-        },
-      ],
+      trademarkList: [],
+      total: 0,
+      page: 1,
+      limit: 3,
     };
+  },
+  methods: {
+    //改变页面显示多少
+    // handleSizeChange(limit) {
+    //   console.log("limit", limit);
+    //   this.getPageList(this.page, limit);
+    // },
+    // //页码改变
+    // handleCurrentChange(page) {
+    //   console.log("page", page);
+    //   this.getPageList(page, this.limit);
+    // },
+    //请求分页列表
+    async getPageList(page, limit) {
+      const result = await this.$API.trademark.getPageList(page, limit);
+      if (result.code === 200) {
+        this.$message.success("获取品牌分页列表成功");
+        this.limit = result.data.size; // 代表每页显示的条数
+        this.page = result.data.current; // 代表当前页码
+        this.trademarkList = result.data.records;
+        this.total = result.data.total; // 总数
+      } else {
+        this.$message.error("获取品牌分页列表失败");
+      }
+    },
+  },
+  mounted() {
+    //默认是1和3
+    this.getPageList(this.page, this.limit);
   },
 };
 </script>
@@ -56,7 +89,7 @@ export default {
   text-align: center
 
 >>>.el-pagination__sizes
-  margin-left: 250px
+  margin-left: 200px
 
 >>>.avatar-uploader .el-upload
   border: 1px dashed #d9d9d9
