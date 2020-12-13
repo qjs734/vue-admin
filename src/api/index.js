@@ -14,3 +14,5 @@ export { default as order }
 from "./order";
 export { default as trademark }
 from "./product/trademark.js";
+export { default as attrs }
+from "./product/attrs.js";
