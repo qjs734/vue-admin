@@ -2,7 +2,12 @@
   <div>
     <el-button @click="add" type="primary" icon="el-icon-plus">添加</el-button>
 
-    <el-table :data="trademarkList" border style="width: 100%; margin: 20px 0">
+    <el-table
+      :data="trademarkList"
+      border
+      style="width: 100%; margin: 20px 0"
+      v-loading="loading"
+    >
       <el-table-column type="index" label="序号" width="80" align="center">
       </el-table-column>
       <el-table-column prop="tmName" label="品牌名称"> </el-table-column>
@@ -19,7 +24,9 @@
           <el-button type="warning" icon="el-icon-edit" @click="update(row)"
             >修改</el-button
           >
-          <el-button type="danger" icon="el-icon-delete">删除</el-button>
+          <el-button type="danger" icon="el-icon-delete" @click="del(row)"
+            >删除</el-button
+          >
         </template>
       </el-table-column>
     </el-table>
@@ -97,19 +104,21 @@ export default {
   data() {
     return {
       trademarkList: [],
-      total: 0,
-      page: 1,
-      limit: 3,
-      visible: false,
+      total: 0, //总数
+      page: 1, //页码
+      limit: 3, //每页条数
+      visible: false, //对话框显示与隐藏
       trademarkForm: {
+        //表单数据
         tmName: "",
         logoUrl: "",
       },
       rules: {
         tmName: [
           {
-            required: true,
-            message: "请输入品牌名称",
+            // required: true,
+            // message: "请输入品牌名称",
+            validator: this.validator,
             trigger: "blur",
           },
         ],
@@ -120,13 +129,67 @@ export default {
           },
         ],
       },
+      loading: false, //加载功能
     };
   },
   methods: {
+    //点击删除按钮
+    del(row) {
+      console.log(row);
+      this.$confirm(`确定删除 ${row.tmName} 吗?`, "提示", {
+        type: "warning",
+      })
+        .then(async () => {
+          // 点击确定的回调
+          // 发删除品牌的请求
+          const result = await this.$API.trademark.deleteTrademark(row.id);
+          // 如果成功了, 提示成功, 重新获取列表(哪一页?)
+          this.$message({
+            type: "success",
+            message: "删除成功!",
+          });
+
+          // 哪一页?  显示上一页(当前页的列表数据只剩下1个)  否则显示当前页
+          // 如果当前是第1页且只剩下1条数据 ==> 请求第1页数据(当前页)
+          this.getPageList(
+            this.trademarkList.length === 1 && this.page > 1
+              ? this.page - 1
+              : this.page,
+            this.limit
+          );
+        })
+        .catch((error) => {
+          // 点击取消的回调
+          if (error === "cancel") {
+            this.$message({
+              type: "info",
+              message: "已取消删除",
+            });
+          }
+        });
+    },
+    //自定义校验规则
+    validator(rule, value, callback) {
+      //callback必须调用  rule校验表单字段 value校验的表单值 callback决定成功失败
+      if (!value) {
+        callback(new Error("请输入品牌名称"));
+        return;
+      } else if (value.length < 2 || value.length > 10) {
+        callback(new Error("请输入2-10位的名字"));
+      }
+      callback();
+    },
     //点击添加按钮
     add() {
       this.visible = true;
-      this.trademarkForm = {};
+      //清空 从修改到添加要清空修改的数据
+      this.trademarkForm = {
+        tmName: "",
+        logoUrl: "",
+      };
+
+      //清空表单校验结果
+      this.$refs.trademarkForm && this.$refs.trademarkForm.clearValidate();
     },
     // 更新修改的方法
     update(row) {
@@ -136,15 +199,17 @@ export default {
       //row代表当前行的数据{}间接等于trademarklist,这样修改trademarkform就会修改trademarklist，所以...解构就变成基本类型就不会地址值改变了
       // this.trademarkForm = { ...row };
       this.trademarkForm = JSON.parse(JSON.stringify(row));
+      //清空表单校验结果
+      this.$refs.trademarkForm && this.$refs.trademarkForm.clearValidate();
     },
     //提交表单的方法
     submitForm(form) {
       this.$refs[form].validate(async (valid) => {
         //校验通过
         if (valid) {
-          //如果是修改
           const { trademarkForm } = this;
           const isUpdate = !!trademarkForm.id;
+          //如果是修改
           if (isUpdate) {
             const tm = this.trademarkList.find(
               (tm) => tm.id === trademarkForm.id
@@ -213,6 +278,7 @@ export default {
     // },
     //请求分页列表
     async getPageList(page, limit) {
+      this.loading = true;
       const result = await this.$API.trademark.getPageList(page, limit);
       if (result.code === 200) {
         this.$message.success("获取品牌分页列表成功");
@@ -223,6 +289,7 @@ export default {
       } else {
         this.$message.error("获取品牌分页列表失败");
       }
+      this.loading = false;
     },
   },
   mounted() {
