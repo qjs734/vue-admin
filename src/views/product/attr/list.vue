@@ -1,10 +1,19 @@
 <template>
   <div>
-    <Category @change="getAttrList" :disabled="!isShowList" />
+    <Category
+      @change="getAttrList"
+      @clearList="clearList"
+      :disabled="!isShowList"
+    />
 
     <el-card v-show="isShowList" style="margin-top: 20px">
-      <el-button type="primary" icon="el-icon-plus">添加属性</el-button>
-
+      <el-button
+        type="primary"
+        icon="el-icon-plus"
+        :disabled="!category.category3Id"
+        @click="add"
+        >添加属性</el-button
+      >
       <el-table :data="attrList" border style="width: 100%; margin: 20px 0">
         <el-table-column type="index" label="序号" width="80" align="center">
         </el-table-column>
@@ -22,7 +31,7 @@
           </template>
         </el-table-column>
         <el-table-column label="操作" width="150">
-          <template v-slot="{ row }">
+          <template v-slot="{ row, $index }">
             <el-button
               type="warning"
               icon="el-icon-edit"
@@ -33,12 +42,13 @@
               type="danger"
               icon="el-icon-delete"
               size="mini"
+              @click="delAttrValue($index)"
             ></el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-card>
-
+    <!-- 第二段 -->
     <el-card v-show="!isShowList" style="margin-top: 20px">
       <el-form :model="attr" inline>
         <el-form-item label="属性名" prop="attrName">
@@ -46,7 +56,11 @@
         </el-form-item>
       </el-form>
 
-      <el-button type="primary" icon="el-icon-plus" @click="addAttrValue"
+      <el-button
+        type="primary"
+        :disabled="!attr.attrName"
+        icon="el-icon-plus"
+        @click="addAttrValue"
         >添加属性值</el-button
       >
 
@@ -130,9 +144,30 @@ export default {
         attrName: "",
         attrValueList: [],
       },
+      category: {
+        category: {
+          category1Id: "", // 1级分类id
+          category2Id: "",
+          category3Id: "",
+        },
+      }, //3个分类的Id
     };
   },
   methods: {
+    //清空列表
+    clearList() {
+      this.attrList = [];
+      //禁用按钮
+      this.category.category3Id = "";
+    },
+    //点击添加按钮触发的方法
+    add() {
+      this.isShowList = false;
+      //点击添加按钮显示出来的card界面应该是空的
+      this.attr.attrName = "";
+      this.attr.attrValueList = [];
+      this.attr.id = "";
+    },
     editCompleted(row, index) {
       if (!row.valueName) {
         this.attr.attrValueList.splice(index, 1);
@@ -140,8 +175,19 @@ export default {
       }
       row.edit = false;
     },
+    //保存按钮  一个是添加 一个是修改操作  没有attr.id有就是添加 有就是修改
     async save() {
-      const result = await this.$API.attrs.saveAttrInfo(this.attr);
+      //判断是否是添加
+      const isAdd = !this.attr.id;
+      const data = this.attr;
+      if (isAdd) {
+        //添加里面的this.attr只有attrName和attrValueList
+        data.categoryId = this.category.category3Id;
+        data.categoryLevel = 3;
+      }
+      //添加与修改发送的请求一样
+      const result = await this.$API.attrs.saveAttrInfo(data);
+
       if (result.code === 200) {
         this.$message.success("更新属性成功~");
         this.isShowList = true;

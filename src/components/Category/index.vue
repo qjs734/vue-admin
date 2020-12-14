@@ -80,6 +80,7 @@ export default {
       } else {
         this.$message.error(result.message);
       }
+      // 清空父组件的数据
       this.$emit("clearList");
     },
     async handleSelectChange2(category2Id) {
@@ -92,7 +93,7 @@ export default {
       } else {
         this.$message.error(result.message);
       }
-      //清空父组件数据
+      // 清空父组件的数据
       this.$emit("clearList");
     },
     async handleSelectChange3(category3Id) {

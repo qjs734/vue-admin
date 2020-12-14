@@ -16,3 +16,6 @@ export { default as trademark }
 from "./product/trademark.js";
 export { default as attrs }
 from "./product/attrs.js";
+
+export { default as spu }
+from "./product/spu.js";
