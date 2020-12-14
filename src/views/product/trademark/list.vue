@@ -33,7 +33,7 @@
     <el-pagination
       @size-change="getPageList(page, limit)"
       @current-change="getPageList(page, limit)"
-      class="trademark-pagination"
+      class="pagination"
       layout="prev, pager,next, jumper,sizes,total"
       :page-sizes="[3, 6, 9]"
       :page-size.sync="limit"
@@ -302,12 +302,6 @@ export default {
 <style lang="sass" scoped>
 .trademark-img
   width: 150px
-
-.trademark-pagination
-  text-align: center
-
->>>.el-pagination__sizes
-  margin-left: 200px
 
 >>>.avatar-uploader .el-upload
   border: 1px dashed #d9d9d9

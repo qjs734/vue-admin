@@ -1,11 +1,13 @@
 <template>
   <div>
-    <Category
+    <!-- 自定义事件的方式 -->
+    <!--  <Category
       @change="getAttrList"
       @clearList="clearList"
       :disabled="!isShowList"
-    />
-
+    /> -->
+    <!-- 全局事件总线 -->
+    <Category :disabled="!isShowList" />
     <el-card v-show="isShowList" style="margin-top: 20px">
       <el-button
         type="primary"
@@ -121,7 +123,7 @@
 </template>
 
 <script>
-import Category from "./category";
+import Category from "@/components/Category/index";
 
 /*
 categoryId:61
@@ -235,8 +237,20 @@ export default {
       }
     },
   },
+  mounted() {
+    //  @change="getAttrList"
+    //   @clearList="clearList"
+    //全局事件总线绑定
+    this.$bus.$on("change", this.getAttrList);
+    this.$bus.$on("clearList", this.clearList);
+  },
   components: {
     Category,
+  },
+  beforeDestroy() {
+    //通常情况下 清楚绑定的全局事件
+    this.$bus.$off("change", this.getAttrList);
+    this.$bus.$off("change", this.clearList);
   },
 };
 </script>
