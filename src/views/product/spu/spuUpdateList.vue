@@ -228,16 +228,23 @@ export default {
             spuImageList: this.imageList,
             spuSaleAttrList: this.spuSaleAttrList,
           };
-
+          let result;
+          if (this.spu.id) {
+            result = await this.$API.spu.updateSpu(spu);
+          } else {
+            result = await this.$API.spu.saveSpu(spu);
+          }
           // 发送请求
-          const result = await this.$API.spu.updateSpu(spu);
+          // const result = await this.$API.spu.updateSpu(spu);
           if (result.code === 200) {
             // 切换回showList
             this.$emit("showList", this.spu.category3Id);
             // this.$nextTick(() => {
             //   this.$bus.$emit("change", { category3Id: this.spu.category3Id });
             // });
-            this.$message.success("更新SPU成功~");
+            this.$message.success(
+              `${this.spu.id ? "更新" : "添加"}更新SPU成功~`
+            );
           } else {
             this.$message.error(result.message);
           }
@@ -397,7 +404,7 @@ export default {
         this.$message.error(result.message);
       }
     },
-    //获取所有图片数据
+    //获取所有图片列表数据
     async getSpuImageList() {
       const { id } = this.spu;
       const result = await this.$API.spu.getSpuImageList(id);
@@ -437,12 +444,16 @@ export default {
   async mounted() {
     //请求所有品牌数据
     this.getTrademarkList();
-    //获取所有图片数据
-    this.getSpuImageList();
     // 获取所有销售属性列表
     this.getSaleAttrList();
     // 获取SPU销售属性列表
-    this.getSpuSaleAttrList();
+    if (this.spu.id) {
+      this.getSpuSaleAttrList();
+    }
+    //获取所有图片数据
+    if (this.spu.id) {
+      this.getSpuImageList();
+    }
   },
   // mounted() {
   //   console.log(this.item);
