@@ -57,6 +57,7 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
 export default {
   name: "SpuShowList",
   data() {
@@ -64,14 +65,36 @@ export default {
       page: 1,
       limit: 3,
       total: 0,
-      category: {
-        category1Id: "",
-        category2Id: "",
-        category3Id: "",
-      },
+      // category: {
+      //   category1Id: "",
+      //   category2Id: "",
+      //   category3Id: "",
+      // },
       spuList: [],
       loading: false,
     };
+  },
+  computed: {
+    ...mapState({
+      category: (state) => state.category.category,
+    }),
+  },
+  watch: {
+    "category.category3Id": {
+      handler(category3Id) {
+        if (!category3Id) return;
+        this.getPageList(this.page, this.limit);
+      },
+      //一上来就触发一次
+      immediate: true,
+    },
+    "category.category1Id"() {
+      this.clearList();
+    },
+
+    "category.category2Id"() {
+      this.clearList();
+    },
   },
   methods: {
     // 一开始获取SPU分页列表
@@ -94,28 +117,26 @@ export default {
       this.loading = false;
     },
     //触发事件  将分类id传过来 处理category的change（选中三级分类时候触发）
-    handleCategoryChange(category) {
-      this.category = category;
-      this.getPageList(this.page, this.limit);
-    },
+    // handleCategoryChange(category) {
+    //   this.getPageList(this.page, this.limit);
+    // },
     //点击1级 2级分类时清空数据
     clearList() {
       this.spuList = [];
       this.page = 1;
       this.limit = 3;
       this.total = 0;
-      this.category.category3Id = "";
     },
   },
   mounted() {
     //触发事件  将分类id传过来
-    this.$bus.$on("change", this.handleCategoryChange);
-    this.$bus.$on("clearList", this.clearList);
+    // this.$bus.$on("change", this.handleCategoryChange);
+    // this.$bus.$on("clearList", this.clearList);
   },
   beforeDestroy() {
     //通常情况下 清楚绑定的全局事件
-    this.$bus.$off("change", this.handleCategoryChange);
-    this.$bus.$off("change", this.clearList);
+    // this.$bus.$off("change", this.handleCategoryChange);
+    // this.$bus.$off("change", this.clearList);
   },
 };
 </script>

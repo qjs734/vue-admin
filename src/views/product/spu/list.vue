@@ -48,13 +48,17 @@ export default {
       this.item = { ...row };
     },
     //这是保存时更新界面的
-    showList(category3Id) {
+    showList(category) {
       this.isShowList = true;
       // 等ShowList组件加载完成，在触发事件,更新界面
-      this.$nextTick(() => {
-        this.$bus.$emit("change", { category3Id });
-      });
+      // this.$nextTick(() => {
+      //   this.$bus.$emit("change", category);
+      // });
+      //通知showlist组件重新发请求
     },
+  },
+  beforeDestroy() {
+    this.$store.commit("category/RESET_CATEGORY_ID");
   },
 };
 </script>

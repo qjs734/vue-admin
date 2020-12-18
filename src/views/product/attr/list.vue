@@ -123,6 +123,7 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
 import Category from "@/components/Category/index";
 
 /*
@@ -146,14 +147,34 @@ export default {
         attrName: "",
         attrValueList: [],
       },
-      category: {
-        category: {
-          category1Id: "", // 1级分类id
-          category2Id: "",
-          category3Id: "",
-        },
-      }, //3个分类的Id
+      // category: {
+      //   category1Id: "", // 1级分类id
+      //   category2Id: "",
+      //   category3Id: "",
+      // }, //3个分类的Id
     };
+  },
+  computed: {
+    ...mapState({
+      category: (state) => {
+        //返回值应该是state的category文件里的category数据
+        return state.category.category;
+      },
+    }),
+  },
+  watch: {
+    "category.category3Id"(category3Id) {
+      console.log(22222);
+      if (!category3Id) return;
+      this.getAttrList();
+    },
+    "category.category1Id"() {
+      this.clearList();
+    },
+
+    "category.category2Id"() {
+      this.clearList();
+    },
   },
   methods: {
     //清空列表
@@ -193,7 +214,7 @@ export default {
       if (result.code === 200) {
         this.$message.success("更新属性成功~");
         this.isShowList = true;
-        this.getAttrList(this.category);
+        this.getAttrList();
       } else {
         this.$message.error(result.message);
       }
@@ -225,9 +246,9 @@ export default {
 
       this.isShowList = false;
     },
-    async getAttrList(category) {
-      this.category = category;
-      const result = await this.$API.attrs.getAttrList(category);
+    async getAttrList() {
+      const result = await this.$API.attrs.getAttrList(this.category);
+
       if (result.code === 200) {
         // console.log(result.data);
         // 子组件给父组件传递参数 自定义事件
@@ -241,16 +262,19 @@ export default {
     //  @change="getAttrList"
     //   @clearList="clearList"
     //全局事件总线绑定
-    this.$bus.$on("change", this.getAttrList);
-    this.$bus.$on("clearList", this.clearList);
+    // this.$bus.$on("change", this.getAttrList);
+    // this.$bus.$on("clearList", this.clearList);
   },
   components: {
     Category,
   },
   beforeDestroy() {
-    //通常情况下 清楚绑定的全局事件
-    this.$bus.$off("change", this.getAttrList);
-    this.$bus.$off("change", this.clearList);
+    this.$store.commit("category/RESET_CATEGORY_ID");
   },
+  // beforeDestroy() {
+  //   //通常情况下 清楚绑定的全局事件
+  //   // this.$bus.$off("change", this.getAttrList);
+  //   // this.$bus.$off("change", this.clearList);
+  // },
 };
 </script>
