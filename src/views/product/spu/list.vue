@@ -1,6 +1,10 @@
 <template>
   <div>
-    <SKuList v-if="isShowSkulist" :spuItem="spuItem"></SKuList>
+    <SKuList
+      v-if="isShowSkulist"
+      :spuItem="spuItem"
+      @showList="showList"
+    ></SKuList>
     <div v-else>
       <Category :disabled="!isShowList" />
       <SpuShowList
@@ -50,6 +54,8 @@ export default {
     //这是保存时更新界面的
     showList(category) {
       this.isShowList = true;
+      this.isShowSkuList = false;
+
       // 等ShowList组件加载完成，在触发事件,更新界面
       // this.$nextTick(() => {
       //   this.$bus.$emit("change", category);

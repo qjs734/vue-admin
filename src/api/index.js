@@ -19,3 +19,6 @@ from "./product/attrs.js";
 
 export { default as spu }
 from "./product/spu.js";
+
+export { default as sku }
+from "./product/sku.js";
